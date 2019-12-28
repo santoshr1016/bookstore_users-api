@@ -11,19 +11,19 @@ import (
 const (
 	mysql_users_username = "mysql_users_username"
 	mysql_users_password = "mysql_users_password"
-	mysql_users_host = "mysql_users_host"
-	mysql_users_schema = "mysql_users_schema"
+	mysql_users_host     = "mysql_users_host"
+	mysql_users_schema   = "mysql_users_schema"
 )
 
 var (
-	Client *sql.DB
+	Client   *sql.DB
 	username = os.Getenv(mysql_users_username)
 	password = os.Getenv(mysql_users_password)
-	host = os.Getenv(mysql_users_host)
-	schema = os.Getenv(mysql_users_schema)
+	host     = os.Getenv(mysql_users_host)
+	schema   = os.Getenv(mysql_users_schema)
 )
 
-func init(){
+func init() {
 	//datasourceName := "root:root@tcp(127.0.0.1:32775)/usersDB"
 	datasourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, host, schema)
 	var err error
@@ -37,5 +37,4 @@ func init(){
 		fmt.Println("Mysql connection error", err)
 		panic(err)
 	}
-
 }
