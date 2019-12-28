@@ -22,6 +22,8 @@ const (
 	noRowsError      = "no rows in result set"
 	queryInsertUser  = "INSERT INTO users(first_name, last_name, email, date_created) VALUES(?,?,?,?);"
 	queryGetUser     = "SELECT id, first_name, last_name, email, date_created FROM users where id=?;"
+	queryUpdateUser  = "Update users SET first_name=?, last_name=?, email=? where id=?;"
+	queryDeleteUser  = "Delete from users where id=?;"
 )
 
 // Local In memoryDB
@@ -122,5 +124,33 @@ func (user *User) Save() *errors.RestError {
 	//user.DateCreated = now.Format("Mon Jan 2 2006 15:04:05")
 	//userDB[user.Id] = user
 	//user.DateCreated = date_utils.GetNowString()
+	return nil
+}
+
+func (user *User) Update() *errors.RestError {
+	stmt, err := users_db.Client.Prepare(queryUpdateUser)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	defer stmt.Close()
+	user.DateCreated = date_utils.GetNowString()
+	_, saveErr := stmt.Exec(user.FirstName, user.Lastname, user.Email, user.Id)
+	if saveErr != nil {
+		return mysql_utils.ParseError(saveErr)
+	}
+
+	return nil
+
+}
+
+func (user *User) Delete() *errors.RestError {
+	stmt, err := users_db.Client.Prepare(queryDeleteUser)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	defer stmt.Close()
+	if _, delErr := stmt.Exec(user.Id); delErr != nil {
+		return mysql_utils.ParseError(delErr)
+	}
 	return nil
 }

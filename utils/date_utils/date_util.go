@@ -2,7 +2,7 @@ package date_utils
 
 import "time"
 
-const dateLayout  = "Mon Jan 2 2006 15:04:05 MST"
+const dateLayout = "Mon Jan 2 2006 15:04:05 MST"
 
 func GetNow() time.Time {
 	return time.Now().UTC()

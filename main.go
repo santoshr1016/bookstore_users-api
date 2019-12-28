@@ -2,6 +2,6 @@ package main
 
 import "github.com/santoshr1016/bookstore_users-api/app"
 
-func main(){
+func main() {
 	app.StartApplication()
 }
