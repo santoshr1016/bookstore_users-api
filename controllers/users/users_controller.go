@@ -19,39 +19,20 @@ func getUserId(userIdParam string) (int64, *errors.RestError) {
 
 func Create(context *gin.Context) {
 
-	// TODO This is one way of reading the http body
-	/*
-		var user users.User
-		bytes, err := ioutil.ReadAll(context.Request.Body)
-		if err != nil {
-			// Handle the error
-			return
-		}
-		if err := json.Unmarshal(bytes, &user); err != nil {
-			// Handle json error
-			fmt.Println("error", err)
-			return
-		}
-		fmt.Println(user)
-	*/
-	// TODO This is Shorter version of the above
 	var user users.User
 	if err := context.ShouldBindJSON(&user); err != nil {
-		// TODO Handle json error, Bad Request
 		restErr := errors.NewBadRequestError("invalid json body")
 		context.JSON(restErr.Status, restErr)
 		return
 	}
 
-	result, saveErr := services.CreateUser(user)
+	result, saveErr := services.UsersService.CreateUser(user)
 	if saveErr != nil {
-		// TODO Handle User Error Creation error
 		context.JSON(saveErr.Status, saveErr)
 		return
 	}
 
-	//context.String(http.StatusNotImplemented, "Implement me")
-	context.JSON(http.StatusCreated, result)
+	context.JSON(http.StatusCreated, result.Marshall(context.GetHeader("X-Public") == "true"))
 }
 
 func Get(ctx *gin.Context) {
@@ -61,15 +42,17 @@ func Get(ctx *gin.Context) {
 		return
 	}
 
-	user, getErr := services.GetUser(userId)
+	user, getErr := services.UsersService.GetUser(userId)
 	if getErr != nil {
 		// TODO Handle User Error Creation error
+		//ctx.JSON(getErr.Status, getErr)
 		ctx.JSON(getErr.Status, getErr)
 		return
 	}
 
 	//context.String(http.StatusNotImplemented, "Implement me")
-	ctx.JSON(http.StatusOK, user)
+	//ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, user.Marshall(ctx.GetHeader("X-Public") == "true"))
 }
 
 func Update(ctx *gin.Context) {
@@ -89,11 +72,11 @@ func Update(ctx *gin.Context) {
 	user.Id = userId
 	isPartial := ctx.Request.Method == http.MethodPatch
 
-	updatedUser, err := services.UpdateUser(isPartial, user)
+	updatedUser, err := services.UsersService.UpdateUser(isPartial, user)
 	if err != nil {
 		ctx.JSON(err.Status, err.Message)
 	}
-	ctx.JSON(http.StatusOK, updatedUser)
+	ctx.JSON(http.StatusOK, updatedUser.Marshall(ctx.GetHeader("X-Public") == "true"))
 }
 
 func Delete(ctx *gin.Context) {
@@ -102,13 +85,19 @@ func Delete(ctx *gin.Context) {
 		ctx.JSON(userErr.Status, userErr.Message)
 		return
 	}
-	if err := services.DeleteUser(userId); err != nil {
+	if err := services.UsersService.DeleteUser(userId); err != nil {
 		ctx.JSON(err.Status, err.Message)
 		return
 	}
 	ctx.JSON(http.StatusOK, map[string]string{"status": "deleted"})
 }
 
-func SearchUser(context *gin.Context) {
-	context.String(http.StatusNotImplemented, "Implement me")
+func Search(ctx *gin.Context) {
+	status := ctx.Query("status")
+	usersGot, err := services.UsersService.SearchUser(status)
+	if err != nil {
+		ctx.JSON(err.Status, err.Message)
+		return
+	}
+	ctx.JSON(http.StatusOK, usersGot.Marshall(ctx.GetHeader("X-Public") == "true"))
 }
