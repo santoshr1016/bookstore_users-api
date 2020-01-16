@@ -101,3 +101,18 @@ func Search(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, usersGot.Marshall(ctx.GetHeader("X-Public") == "true"))
 }
+
+func Login(ctx *gin.Context) {
+	var request users.LoginRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		restErr := errors.NewBadRequestError("invalid json body")
+		ctx.JSON(restErr.Status, restErr)
+		return
+	}
+	user, err := services.UsersService.LoginUser(request)
+	if err != nil {
+		ctx.JSON(err.Status, err.Message)
+	}
+	//ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, user.Marshall(ctx.GetHeader("X-Public") == "true"))
+}
